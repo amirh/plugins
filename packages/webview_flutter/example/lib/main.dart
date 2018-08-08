@@ -24,8 +24,9 @@ class MyApp extends StatelessWidget {
           title: const Text('WebView example app'),
         ),
         //body: const ToyBrowser(initialUrl: 'https://flutter.io'),
-        body: const ToyBrowser(initialUrl: 'https://sketch.io/sketchpad'),
-        //body: const ToyBrowser(initialUrl: 'https://youtube.com'),
+        //body: const ToyBrowser(initialUrl: 'https://sketch.io/sketchpad'),
+        //body: const ToyBrowser(initialUrl: 'http://tobiasahlin.com/spinkit/'),
+        body: const ToyBrowser(initialUrl: 'https://youtube.com'),
         //body: const ToyBrowser(initialUrl: 'https://photos.app.goo.gl/5hKzYhqvpyb2swQT7'),
         //body: const ToyBrowser(initialUrl: 'https://www.google.com'),
       ),
@@ -70,6 +71,7 @@ class ToyBrowserState extends State<ToyBrowser> {
           onSubmitted: (String newUrl) {
             webController?.loadUrl(newUrl);
           },
+          keyboardType: TextInputType.url,
         ),
         new Row(
           children: <Widget>[
