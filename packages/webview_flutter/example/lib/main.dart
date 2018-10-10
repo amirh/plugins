@@ -11,15 +11,26 @@ class WebViewExample extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Flutter WebView example'),
-        // This drop down menu demonstrates that Flutter widgets can be shown over the web view.
-        actions: <Widget>[const SampleMenu()],
-      ),
-      body: const WebView(
-        initialUrl: 'https://youtube.com',
-        javaScriptMode: JavaScriptMode.unrestricted,
-      ),
+        appBar: AppBar(
+            title: const Text('Flutter WebView example'),
+            // This drop down menu demonstrates that Flutter widgets can be shown over the web view.
+            actions: <Widget>[const SampleMenu()],
+        ),
+        //     body: const WebView(
+        //         initialUrl: 'https://sketch.io/sketchpad/',
+        //         javaScriptMode: JavaScriptMode.unrestricted,
+        //     ),
+        body: Transform(  // Transform widget
+            transform: Matrix4.identity()
+            ..setEntry(3, 2, 0.001) // perspective
+            ..rotateX(0.4)
+            ..rotateY(0.7),
+            alignment: FractionalOffset.center,
+            child: const WebView(
+                initialUrl: 'https://sketch.io/sketchpad/',
+                javaScriptMode: JavaScriptMode.unrestricted,
+            ),
+        ),
     );
   }
 }
