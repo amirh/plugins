@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "WebviewFlutterPlugin.h"
+#import "WebViewFactory.h"
 
 @implementation FLTWebviewFlutterPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
@@ -10,6 +11,8 @@
       [FlutterMethodChannel methodChannelWithName:@"webview_flutter"
                                   binaryMessenger:[registrar messenger]];
   FLTWebviewFlutterPlugin* instance = [[FLTWebviewFlutterPlugin alloc] init];
+  WebViewFactory* factory = [[WebViewFactory  alloc] init];
+  [[registrar platformViewsRegistry] registerViewFactory:factory withId:@"plugins.flutter.io/webview"];
   [registrar addMethodCallDelegate:instance channel:channel];
 }
 

@@ -3,9 +3,13 @@
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-void main() => runApp(MaterialApp(home: WebViewExample()));
+void main() {
+  PlatformViewsService.initIosView(id: 1, viewType: 'plugins.flutter.io/webview');
+  runApp(MaterialApp(home: WebViewExample()));
+}
 
 class WebViewExample extends StatelessWidget {
   @override
