@@ -12,7 +12,7 @@
                                   binaryMessenger:[registrar messenger]];
   FLTWebviewFlutterPlugin* instance = [[FLTWebviewFlutterPlugin alloc] init];
   WebViewFactory* factory = [[WebViewFactory  alloc] init];
-  [[registrar platformViewsRegistry] registerViewFactory:factory withId:@"plugins.flutter.io/webview"];
+  [registrar registerViewFactory:factory withId:@"plugins.flutter.io/webview"];
   [registrar addMethodCallDelegate:instance channel:channel];
 }
 
