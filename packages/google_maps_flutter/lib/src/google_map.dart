@@ -21,6 +21,7 @@ class GoogleMap extends StatefulWidget {
     this.tiltGesturesEnabled = true,
     this.trackCameraPosition = false,
     this.myLocationEnabled = false,
+    this.markers,
   }) : assert(initialCameraPosition != null);
 
   final MapCreatedCallback onMapCreated;
@@ -82,6 +83,8 @@ class GoogleMap extends StatefulWidget {
   /// when the map tries to turn on the My Location layer.
   final bool myLocationEnabled;
 
+  final Set<Marker> markers;
+
   /// Which gestures should be consumed by the map.
   ///
   /// It is possible for other gesture recognizers to be competing with the map on pointer
@@ -98,6 +101,8 @@ class GoogleMap extends StatefulWidget {
 }
 
 class _GoogleMapState extends State<GoogleMap> {
+  static final Set<Marker> _kEmptyMarkersSet = Set<Marker>();
+
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
 
@@ -162,6 +167,20 @@ class _GoogleMapState extends State<GoogleMap> {
     if (widget.onMapCreated != null) {
       widget.onMapCreated(controller);
     }
+  }
+  
+  Future<void> _updateMarkers(Set<Marker> prevMarkers, Set<Marker> currentMarkers) async {
+    if (prevMarkers == currentMarkers) {
+      return;
+    }
+    
+    final Set<Marker> markersToRemove = prevMarkers.difference(currentMarkers);
+    final Set<Marker> markersToAdd = currentMarkers.difference(prevMarkers);
+
+    final GoogleMapController controller = await _controller.future;
+
+    markersToRemove.forEach((Marker marker) { controller.removeMarker(marker); });
+    markersToAdd.forEach((Marker marker) { controller.addMarker(marker); });
   }
 }
 

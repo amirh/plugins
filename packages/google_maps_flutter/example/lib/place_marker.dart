@@ -32,7 +32,7 @@ class PlaceMarkerBodyState extends State<PlaceMarkerBody> {
 
   GoogleMapController controller;
   int _markerCount = 0;
-  Marker _selectedMarker;
+  LegacyMarker _selectedMarker;
 
   void _onMapCreated(GoogleMapController controller) {
     this.controller = controller;
@@ -45,17 +45,17 @@ class PlaceMarkerBodyState extends State<PlaceMarkerBody> {
     super.dispose();
   }
 
-  void _onMarkerTapped(Marker marker) {
+  void _onMarkerTapped(LegacyMarker marker) {
     if (_selectedMarker != null) {
       _updateSelectedMarker(
-        const MarkerOptions(icon: BitmapDescriptor.defaultMarker),
+        const Marker(icon: BitmapDescriptor.defaultMarker),
       );
     }
     setState(() {
       _selectedMarker = marker;
     });
     _updateSelectedMarker(
-      MarkerOptions(
+      Marker(
         icon: BitmapDescriptor.defaultMarkerWithHue(
           BitmapDescriptor.hueGreen,
         ),
@@ -63,12 +63,12 @@ class PlaceMarkerBodyState extends State<PlaceMarkerBody> {
     );
   }
 
-  void _updateSelectedMarker(MarkerOptions changes) {
+  void _updateSelectedMarker(Marker changes) {
     controller.updateMarker(_selectedMarker, changes);
   }
 
   void _add() {
-    controller.addMarker(MarkerOptions(
+    controller.addMarker(Marker(
       position: LatLng(
         center.latitude + sin(_markerCount * pi / 6.0) / 20.0,
         center.longitude + cos(_markerCount * pi / 6.0) / 20.0,
@@ -95,7 +95,7 @@ class PlaceMarkerBodyState extends State<PlaceMarkerBody> {
       center.longitude - current.longitude,
     );
     _updateSelectedMarker(
-      MarkerOptions(
+      Marker(
         position: LatLng(
           center.latitude + offset.dy,
           center.longitude + offset.dx,
@@ -107,28 +107,28 @@ class PlaceMarkerBodyState extends State<PlaceMarkerBody> {
   void _changeAnchor() {
     final Offset currentAnchor = _selectedMarker.options.anchor;
     final Offset newAnchor = Offset(1.0 - currentAnchor.dy, currentAnchor.dx);
-    _updateSelectedMarker(MarkerOptions(anchor: newAnchor));
+    _updateSelectedMarker(Marker(anchor: newAnchor));
   }
 
   Future<void> _changeInfoAnchor() async {
     final Offset currentAnchor = _selectedMarker.options.infoWindowAnchor;
     final Offset newAnchor = Offset(1.0 - currentAnchor.dy, currentAnchor.dx);
-    _updateSelectedMarker(MarkerOptions(infoWindowAnchor: newAnchor));
+    _updateSelectedMarker(Marker(infoWindowAnchor: newAnchor));
   }
 
   Future<void> _toggleDraggable() async {
     _updateSelectedMarker(
-      MarkerOptions(draggable: !_selectedMarker.options.draggable),
+      Marker(draggable: !_selectedMarker.options.draggable),
     );
   }
 
   Future<void> _toggleFlat() async {
-    _updateSelectedMarker(MarkerOptions(flat: !_selectedMarker.options.flat));
+    _updateSelectedMarker(Marker(flat: !_selectedMarker.options.flat));
   }
 
   Future<void> _changeInfo() async {
     final InfoWindowText currentInfo = _selectedMarker.options.infoWindowText;
-    _updateSelectedMarker(MarkerOptions(
+    _updateSelectedMarker(Marker(
       infoWindowText: InfoWindowText(
         currentInfo.title,
         currentInfo.snippet + '*',
@@ -139,27 +139,27 @@ class PlaceMarkerBodyState extends State<PlaceMarkerBody> {
   Future<void> _changeAlpha() async {
     final double current = _selectedMarker.options.alpha;
     _updateSelectedMarker(
-      MarkerOptions(alpha: current < 0.1 ? 1.0 : current * 0.75),
+      Marker(alpha: current < 0.1 ? 1.0 : current * 0.75),
     );
   }
 
   Future<void> _changeRotation() async {
     final double current = _selectedMarker.options.rotation;
     _updateSelectedMarker(
-      MarkerOptions(rotation: current == 330.0 ? 0.0 : current + 30.0),
+      Marker(rotation: current == 330.0 ? 0.0 : current + 30.0),
     );
   }
 
   Future<void> _toggleVisible() async {
     _updateSelectedMarker(
-      MarkerOptions(visible: !_selectedMarker.options.visible),
+      Marker(visible: !_selectedMarker.options.visible),
     );
   }
 
   Future<void> _changeZIndex() async {
     final double current = _selectedMarker.options.zIndex;
     _updateSelectedMarker(
-      MarkerOptions(zIndex: current == 12.0 ? 0.0 : current + 1.0),
+      Marker(zIndex: current == 12.0 ? 0.0 : current + 1.0),
     );
   }
 

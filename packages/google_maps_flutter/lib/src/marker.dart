@@ -11,9 +11,9 @@ part of google_maps_flutter;
 ///
 /// Markers are owned by a single [GoogleMapController] which fires events
 /// as markers are added, updated, tapped, and removed.
-class Marker {
+class LegacyMarker {
   @visibleForTesting
-  Marker(this._id, this._options);
+  LegacyMarker(this._id, this._options);
 
   /// A unique identifier for this marker.
   ///
@@ -21,14 +21,14 @@ class Marker {
   final String _id;
   String get id => _id;
 
-  MarkerOptions _options;
+  Marker _options;
 
   /// The marker configuration options most recently applied programmatically
   /// via the map controller.
   ///
   /// The returned value does not reflect any changes made to the marker through
   /// touch events. Add listeners to the owning map controller to track those.
-  MarkerOptions get options => _options;
+  Marker get options => _options;
 }
 
 dynamic _offsetToJson(Offset offset) {
@@ -38,7 +38,7 @@ dynamic _offsetToJson(Offset offset) {
   return <dynamic>[offset.dx, offset.dy];
 }
 
-/// Text labels for a [Marker] info window.
+/// Text labels for a [LegacyMarker] info window.
 class InfoWindowText {
   const InfoWindowText(this.title, this.snippet);
 
@@ -58,16 +58,18 @@ class InfoWindowText {
   dynamic _toJson() => <dynamic>[title, snippet];
 }
 
-/// Configuration options for [Marker] instances.
+class MarkerKey {}
+
+/// Configuration options for [LegacyMarker] instances.
 ///
 /// When used to change configuration, null values will be interpreted as
 /// "do not change this configuration option".
-class MarkerOptions {
+class Marker {
   /// Creates a set of marker configuration options.
   ///
   /// By default, every non-specified field is null, meaning no desire to change
   /// marker defaults or current configuration.
-  const MarkerOptions({
+  const Marker({
     this.alpha,
     this.anchor,
     this.consumeTapEvents,
@@ -80,6 +82,7 @@ class MarkerOptions {
     this.rotation,
     this.visible,
     this.zIndex,
+    this.key,
   }) : assert(alpha == null || (0.0 <= alpha && alpha <= 1.0));
 
   /// The opacity of the marker, between 0.0 and 1.0 inclusive.
@@ -136,6 +139,8 @@ class MarkerOptions {
   /// earlier, and thus appearing to be closer to the surface of the Earth.
   final double zIndex;
 
+  final MarkerKey key;
+
   /// Default marker options.
   ///
   /// Specifies a marker that
@@ -151,7 +156,7 @@ class MarkerOptions {
   /// * has an axis-aligned icon; [rotation] is 0.0
   /// * is visible; [visible] is true
   /// * is placed at the base of the drawing order; [zIndex] is 0.0
-  static const MarkerOptions defaultOptions = MarkerOptions(
+  static const Marker defaultOptions = Marker(
     alpha: 1.0,
     anchor: Offset(0.5, 1.0),
     consumeTapEvents: false,
@@ -170,11 +175,11 @@ class MarkerOptions {
   /// unless overwritten by the specified [changes].
   ///
   /// Returns this instance, if [changes] is null.
-  MarkerOptions copyWith(MarkerOptions changes) {
+  Marker copyWith(Marker changes) {
     if (changes == null) {
       return this;
     }
-    return MarkerOptions(
+    return Marker(
       alpha: changes.alpha ?? alpha,
       anchor: changes.anchor ?? anchor,
       consumeTapEvents: changes.consumeTapEvents ?? consumeTapEvents,
@@ -190,12 +195,14 @@ class MarkerOptions {
     );
   }
 
-  dynamic _toJson() {
-    final Map<String, dynamic> json = <String, dynamic>{};
+  dynamic _toMap(int id) {
+    final Map<String, dynamic> map = <String, dynamic>{
+      'id': id,
+    };
 
     void addIfPresent(String fieldName, dynamic value) {
       if (value != null) {
-        json[fieldName] = value;
+        map[fieldName] = value;
       }
     }
 
@@ -211,6 +218,43 @@ class MarkerOptions {
     addIfPresent('rotation', rotation);
     addIfPresent('visible', visible);
     addIfPresent('zIndex', zIndex);
-    return json;
+    return map;
+  }
+
+  @override
+  bool operator ==(dynamic other) {
+    if (identical(this, other)) return true;
+    if (runtimeType != other.runtimeType) return false;
+    final Marker typedOther = other;
+    return alpha == typedOther.alpha &&
+        anchor == typedOther.anchor &&
+        consumeTapEvents == typedOther.consumeTapEvents &&
+        draggable == typedOther.draggable &&
+        flat == typedOther.flat &&
+        icon == typedOther.icon &&
+        infoWindowAnchor == typedOther.infoWindowAnchor &&
+        infoWindowText == typedOther.infoWindowText &&
+        position == typedOther.position &&
+        rotation == typedOther.rotation &&
+        visible == typedOther.visible &&
+        zIndex == typedOther.zIndex;
+  }
+
+  @override
+  int get hashCode {
+    return hashValues(
+      alpha,
+      anchor,
+      consumeTapEvents,
+      draggable,
+      flat,
+      icon,
+      infoWindowAnchor,
+      infoWindowText,
+      position,
+      rotation,
+      visible,
+      zIndex,
+    );
   }
 }

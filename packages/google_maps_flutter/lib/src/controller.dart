@@ -9,7 +9,7 @@ part of google_maps_flutter;
 /// Change listeners are notified upon changes to any of
 ///
 /// * the [options] property
-/// * the collection of [Marker]s added to this map
+/// * the collection of [LegacyMarker]s added to this map
 /// * the [isCameraMoving] property
 /// * the [cameraPosition] property
 ///
@@ -38,17 +38,14 @@ class GoogleMapController extends ChangeNotifier {
   final MethodChannel _channel;
 
   /// Callbacks to receive tap events for markers placed on this map.
-  final ArgumentCallbacks<Marker> onMarkerTapped = ArgumentCallbacks<Marker>();
+  final ArgumentCallbacks<LegacyMarker> onMarkerTapped = ArgumentCallbacks<LegacyMarker>();
 
   /// Callbacks to receive tap events for info windows on markers
-  final ArgumentCallbacks<Marker> onInfoWindowTapped =
-      ArgumentCallbacks<Marker>();
+  final ArgumentCallbacks<LegacyMarker> onInfoWindowTapped =
+      ArgumentCallbacks<LegacyMarker>();
 
-  /// The current set of markers on this map.
-  ///
-  /// The returned set will be a detached snapshot of the markers collection.
-  Set<Marker> get markers => Set<Marker>.from(_markers.values);
-  final Map<String, Marker> _markers = <String, Marker>{};
+  int _nextMarkerId = 0;
+  final Map<Marker, int> _markers = <Marker, int>{};
 
   /// True if the map camera is currently moving.
   bool get isCameraMoving => _isCameraMoving;
@@ -65,7 +62,7 @@ class GoogleMapController extends ChangeNotifier {
     switch (call.method) {
       case 'infoWindow#onTap':
         final String markerId = call.arguments['marker'];
-        final Marker marker = _markers[markerId];
+        final LegacyMarker marker = _markers[markerId];
         if (marker != null) {
           onInfoWindowTapped(marker);
         }
@@ -73,7 +70,7 @@ class GoogleMapController extends ChangeNotifier {
 
       case 'marker#onTap':
         final String markerId = call.arguments['marker'];
-        final Marker marker = _markers[markerId];
+        final LegacyMarker marker = _markers[markerId];
         if (marker != null) {
           onMarkerTapped(marker);
         }
@@ -140,19 +137,16 @@ class GoogleMapController extends ChangeNotifier {
   ///
   /// The returned [Future] completes with the added marker once listeners have
   /// been notified.
-  Future<Marker> addMarker(MarkerOptions options) async {
-    final MarkerOptions effectiveOptions =
-        MarkerOptions.defaultOptions.copyWith(options);
-    final String markerId = await _channel.invokeMethod(
+  Future<int> addMarker(Marker marker) async {
+    final int markerId = _nextMarkerId++;
+    await _channel.invokeMethod(
       'marker#add',
       <String, dynamic>{
-        'options': effectiveOptions._toJson(),
+        'options': marker._toMap(markerId),
       },
     );
-    final Marker marker = Marker(markerId, effectiveOptions);
-    _markers[markerId] = marker;
-    notifyListeners();
-    return marker;
+    _markers[marker] = markerId;
+    return markerId;
   }
 
   /// Updates the specified [marker] with the given [changes]. The marker must
@@ -162,13 +156,14 @@ class GoogleMapController extends ChangeNotifier {
   /// platform side.
   ///
   /// The returned [Future] completes once listeners have been notified.
-  Future<void> updateMarker(Marker marker, MarkerOptions changes) async {
-    assert(marker != null);
-    assert(_markers[marker._id] == marker);
+  Future<void> updateMarker(Marker previousMarker, Marker newMarker) async {
+    assert(previousMarker != null);
+    // WIP
+    assert(_markers.containsKey(previousMarker));
     assert(changes != null);
     await _channel.invokeMethod('marker#update', <String, dynamic>{
       'marker': marker._id,
-      'options': changes._toJson(),
+      'options': changes._toMap(),
     });
     marker._options = marker._options.copyWith(changes);
     notifyListeners();
@@ -181,7 +176,7 @@ class GoogleMapController extends ChangeNotifier {
   /// platform side.
   ///
   /// The returned [Future] completes once listeners have been notified.
-  Future<void> removeMarker(Marker marker) async {
+  Future<void> removeMarker(LegacyMarker marker) async {
     assert(marker != null);
     assert(_markers[marker._id] == marker);
     await _removeMarker(marker._id);

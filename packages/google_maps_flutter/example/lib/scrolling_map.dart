@@ -99,7 +99,7 @@ class ScrollingMapBody extends StatelessWidget {
   }
 
   void onMapCreated(GoogleMapController controller) {
-    controller.addMarker(MarkerOptions(
+    controller.addMarker(Marker(
       position: LatLng(
         center.latitude,
         center.longitude,
