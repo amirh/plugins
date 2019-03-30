@@ -4,6 +4,8 @@
 
 package io.flutter.plugins.webviewflutter;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.webkit.JavascriptInterface;
 import io.flutter.plugin.common.MethodChannel;
 import java.util.HashMap;
@@ -33,10 +35,18 @@ class JavaScriptChannel {
   // Suppressing unused warning as this is invoked from JavaScript.
   @SuppressWarnings("unused")
   @JavascriptInterface
-  public void postMessage(String message) {
-    HashMap<String, String> arguments = new HashMap<>();
+  public void postMessage(final String message) {
+    final HashMap<String, String> arguments = new HashMap<>();
     arguments.put("channel", javaScriptChannelName);
     arguments.put("message", message);
-    methodChannel.invokeMethod("javascriptChannelMessage", arguments);
+
+    Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    mainHandler.post(new Runnable() {
+      @Override
+      public void run() {
+        methodChannel.invokeMethod("javascriptChannelMessage", arguments);
+      }
+    });
   }
 }
