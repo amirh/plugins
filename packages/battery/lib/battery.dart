@@ -4,58 +4,58 @@
 
 import 'dart:async';
 
-import 'package:flutter/services.dart';
-import 'package:meta/meta.dart' show visibleForTesting;
+import 'package:battery/src/method_channel_battery.dart';
+import 'package:flutter/foundation.dart';
 
-/// Indicates the current battery state.
-enum BatteryState { full, charging, discharging }
+import 'battery_platform_interface.dart';
 
 class Battery {
+  
   factory Battery() {
     if (_instance == null) {
-      final MethodChannel methodChannel =
-          const MethodChannel('plugins.flutter.io/battery');
-      final EventChannel eventChannel =
-          const EventChannel('plugins.flutter.io/charging');
-      _instance = Battery.private(methodChannel, eventChannel);
+      _instance = Battery._();
     }
     return _instance;
   }
 
-  @visibleForTesting
-  Battery.private(this._methodChannel, this._eventChannel);
+  Battery._();
+
 
   static Battery _instance;
 
-  final MethodChannel _methodChannel;
-  final EventChannel _eventChannel;
-  Stream<BatteryState> _onBatteryStateChanged;
+  static BatteryPlatform _platform;
+
+  /// Sets a custom [BatteryPlatform].
+  ///
+  /// This property can be set to use a custom platform implementation.
+  static set platform(BatteryPlatform platform) {
+    assert(_platform == null);
+    _platform = platform;
+  }
+
+  /// The Battery platform that's used by the plugin.
+  ///
+  /// The default value is [MethodChannelBattry] on Android on iOS.
+  static BatteryPlatform get platform {
+    if (_platform == null) {
+      switch (defaultTargetPlatform) {
+        case TargetPlatform.android:
+          _platform = MethodChannelBattery();
+          break;
+        case TargetPlatform.iOS:
+          _platform = MethodChannelBattery();
+          break;
+        default:
+          throw UnsupportedError(
+              "Trying to use the default battery implementation for $defaultTargetPlatform but there isn't a default one");
+      }
+    }
+    return _platform;
+  }
 
   /// Returns the current battery level in percent.
-  Future<int> get batteryLevel => _methodChannel
-      .invokeMethod<int>('getBatteryLevel')
-      .then<int>((dynamic result) => result);
+  Future<int> get batteryLevel => platform.getBatteryLevel();
 
   /// Fires whenever the battery state changes.
-  Stream<BatteryState> get onBatteryStateChanged {
-    if (_onBatteryStateChanged == null) {
-      _onBatteryStateChanged = _eventChannel
-          .receiveBroadcastStream()
-          .map((dynamic event) => _parseBatteryState(event));
-    }
-    return _onBatteryStateChanged;
-  }
-}
-
-BatteryState _parseBatteryState(String state) {
-  switch (state) {
-    case 'full':
-      return BatteryState.full;
-    case 'charging':
-      return BatteryState.charging;
-    case 'discharging':
-      return BatteryState.discharging;
-    default:
-      throw ArgumentError('$state is not a valid BatteryState.');
-  }
+  Stream<BatteryState> get onBatteryStateChanged  => platform.onBatteryStateChanged;
 }
